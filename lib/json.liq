@@ -129,7 +129,6 @@ def http.json.controler.push_requests(~register, ~id, source) =
   def push_requests(~data, ~headers, ~uri, ~params, response) =
     error    = ["error"]
     parsed   = of_json(default=error, data)
-    print("requests: #{parsed}")
     if parsed == error then
       response(code=400,headers=[],[("error","Parse error")])
     else
