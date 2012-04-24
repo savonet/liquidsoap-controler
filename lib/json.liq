@@ -134,7 +134,7 @@ def http.json.controler.push_requests(~register, ~id, source) =
       response(code=400,headers=[],[("error","Parse error")])
     else
       def push(cur, request) =
-        lines  = server.execute("#{id}.push #{request}")
+        lines  = server.execute("#{source.id(source)}.push #{request}")
         list.append(cur, [(request, string.concat(separator="\n", lines))])
       end
       ret = list.fold(push, [], parsed)
