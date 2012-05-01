@@ -38,9 +38,11 @@ var execute = function (data, after) {
 
 var push = function () {
   options.method = "POST";
-  options.path   = "/sources/foo/requests";
+  options.path   = "/requests/foo";
 
-  var data = JSON.stringify(["/tmp/foo.mp3"])
+  var data = JSON.stringify(["/tmp/foo.mp3"]);
+
+  data = JSON.stringify(data);
 
   options.headers["Content-Type"] =  "application/json";
   options.headers["Content-Length"] = data.length;
