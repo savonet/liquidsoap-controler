@@ -6,7 +6,7 @@ def http.authenticate.basic(~user, ~password, ~headers) =
   headers = list.map(fun (x) -> (string.case(fst(x)), snd(x)), headers)
 
   auth = string.extract(pattern="Basic (.+)", headers["authorization"])
-  auth = list.assoc("1", auth)
+  auth = list.assoc(default="","1", auth)
 
   if auth == "" then
     false

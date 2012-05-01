@@ -15,3 +15,20 @@ def list.mem_assoc(a,l) =
   end
   list.fold(f, false, l)
 end
+
+# More general list.assoc, which returns a default value
+# is no assoc is found.
+# @category List
+# @param ~default Default value when no one could be found
+# @param a Key to look for
+# @param l List of pairs (key,value)
+def list.assoc(~default,a,l)
+  def f(cur, el) =
+    if fst(el) == a then
+      snd(el)
+    else
+      cur
+    end
+  end
+  list.fold(f,default,l)
+end
