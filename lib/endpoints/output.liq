@@ -1,9 +1,11 @@
 # Register an endpoint to create a output.ao(source).
 # @param ~register HTTP controler register handler
-def http.json.controler.output.ao(~register) =
-  def output(source, options) =
-    output.ao(source)
+def controler.json.endpoints.output.ao(~register) =
+  def output(~fallible,source, options) =
+    output.ao(fallible=fallible,source)
   end
 
-  http.json.controler.output_source(register=register, "ao", output) 
+  controler.json.endpoints.output_source(register=register, "ao", output) 
 end
+
+controler.json.endpoints.register(controler.json.endpoints.output.ao)

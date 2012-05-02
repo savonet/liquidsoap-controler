@@ -1,12 +1,10 @@
 %include "json.liq"
-%include "controler.liq"
 
-# Register an endpoint to push a request to a given source
-# Returns a new source that should be used in lieu of the 
-# given source.
-# @param ~register HTTP controler register handler
-# @param ~name Source's ID for the endpoint (/sources/:name/metadata)
-def http.json.controler.apply_source(~register, name, apply) =
+###############
+# PRIVATE API #
+###############
+
+def controler.json.endpoints.apply_source(~register, name, apply) =
   # Handler
   def apply(~data, ~headers, ~uri, ~params, response) =
     error   = ["error"]
@@ -15,7 +13,7 @@ def http.json.controler.apply_source(~register, name, apply) =
     if options == error then
       response(code=400,headers=[],[("error","Parse error")])
     else
-      http.json.controler.twooo(data=apply(name, options),response)
+      controler.json.twooo(data=apply(name, options),response)
     end
   end
 
@@ -23,9 +21,7 @@ def http.json.controler.apply_source(~register, name, apply) =
   register(method="POST", uri="/#{name}", apply)
 end
 
-# Register an endpoint to create a mksafe(source).
-# @param ~register HTTP controler register handler
-def http.json.controler.map_source(~register, name, map) =
+def controler.json.endpoints.map_source(~register, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     ret   = string.extract(pattern="/#{name}/([^/]+)", uri)
@@ -36,7 +32,7 @@ def http.json.controler.map_source(~register, name, map) =
 
        controler.set_source(name, map(name, source, data))
 
-       http.json.controler.twooo(response)
+       controler.json.twooo(response)
      else
        response(code=400,headers=[],[("error","Missing source: #{name}")])
      end
@@ -46,9 +42,7 @@ def http.json.controler.map_source(~register, name, map) =
   register(method="PUT", uri="/#{name}/[^/]+", create_source)
 end
 
-# Register an endpoint to create a fallback source.
-# @param ~register HTTP controler register handler
-def http.json.controler.map_sources(~register, name, map) =
+def controler.json.endpoints.map_sources(~register, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     error  = [("error", ["invalid data"])]
@@ -81,7 +75,7 @@ def http.json.controler.map_sources(~register, name, map) =
       else
         controler.set_source(name, map(name, sources, options))
 
-        http.json.controler.twooo(response)
+        controler.json.twooo(response)
       end
     end
   end
@@ -90,9 +84,7 @@ def http.json.controler.map_sources(~register, name, map) =
   register(method="PUT", uri="/#{name}/[^/]+", create_source)
 end
 
-# Register an endpoint to create a request.queue source.
-# @param ~register HTTP controler register handler
-def http.json.controler.create_source(~register, name, create) =
+def controler.json.endpoints.create_source(~register, name, create) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     ret  = string.extract(pattern="/#{name}/([^/]+)", uri)
@@ -102,16 +94,14 @@ def http.json.controler.create_source(~register, name, create) =
     controler.set_source(name, create(name, data))
 
     # Enable request push on this source.
-    http.json.controler.twooo(response)
+    controler.json.twooo(response)
   end
 
   # Register handler
   register(method="PUT", uri="/#{name}/[^/]+", create_source)
 end
 
-# Register an endpoint to create a output.ao(source).
-# @param ~register HTTP controler register handler
-def http.json.controler.output_source(~register, name, output) =
+def controler.json.endpoints.output_source(~register, name, output) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     ret   = string.extract(pattern="/output/#{name}/([^/]+)", uri)
@@ -120,9 +110,9 @@ def http.json.controler.output_source(~register, name, output) =
      if controler.is_defined(name) then
        source = controler.get_source(name)
 
-       controler.set_source(name, output(source, data))
+       controler.set_source(name, output(fallible=source.fallible(source), source, data))
 
-       http.json.controler.twooo(response)
+       controler.json.twooo(response)
      else
        response(code=400,headers=[],[("error","Missing source: #{name}")])
      end
@@ -132,7 +122,26 @@ def http.json.controler.output_source(~register, name, output) =
   register(method="PUT", uri="/output/#{name}/[^/]+", create_source)
 end
 
+# List of endpoints
+controler.json.endpoints.all = ref []
+
+# Register an endpoint
+def controler.json.endpoints.register(f) =
+  controler.json.endpoints.all := list.append([f], !controler.json.endpoints.all)
+end
+
+# Now include them
+
 %include "endpoints/apply.liq"
 %include "endpoints/create.liq"
 %include "endpoints/map.liq"
 %include "endpoints/output.liq"
+
+##############
+# PUBLIC API #
+##############
+
+# Enable all existing endpoints using a given register
+def controler.json.endpoints.enable_all(~register) =
+  list.iter(fun (f) -> f(register=register), !controler.json.endpoints.all)
+end

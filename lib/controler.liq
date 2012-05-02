@@ -52,3 +52,6 @@ def controler.wrap_source(name, f) =
     true
   end
 end
+
+# Now include endpoints.
+%include "./endpoints.liq"

@@ -4,17 +4,17 @@
 json_headers = [("Content-Type","application/json; charset=utf-8")]
 
 # 404 handler that returns json data
-def http.json.controler.fourofour(~data, ~headers, ~uri, ~params, response) =
+def controler.json.fourofour(~data, ~headers, ~uri, ~params, response) =
   response(code=404, headers=[], [("error","Page not found!")])
 end
 
 # Default 200 response
-def http.json.controler.twooo(~data=[],response) =
+def controler.json.twooo(~data=[],response) =
   response(code=200, headers=[], data)
 end
 
 # Default 401 handler
-def http.json.controler.fouroone(~data, ~headers, ~uri, ~params, response) =
+def controler.json.fouroone(~data, ~headers, ~uri, ~params, response) =
   headers = [("WWW-Authenticate", "Basic realm=\"Liquidsoap Controler\"")]
   response(code=401, headers=headers, [("error","Unauthorized!")])
 end
@@ -23,9 +23,9 @@ end
 # it _always_ returns json data. Consequently, 
 # called handler should _never_ set Content-Type
 # header.
-def http.json.enable_controler(~fourofour=http.json.controler.fourofour, 
-                               ~fouroone=http.json.controler.fouroone, 
-                               ~prefix="/", ~port) =
+def controler.enable_json(~fourofour=controler.json.fourofour, 
+                          ~fouroone=controler.json.fouroone, 
+                          ~prefix="/", ~port) =
   # Wrap a handler
   def wrap_handler(handler) =
     def handler(~headers, ~data, ~uri, ~params, response) =
@@ -41,7 +41,7 @@ def http.json.enable_controler(~fourofour=http.json.controler.fourofour,
   end
 
   # Register to main controler
-  register_endpoint = http.enable_controler(fourofour=wrap_handler(fourofour),
+  register_endpoint = controler.enable_http(fourofour=wrap_handler(fourofour),
                                             fouroone=wrap_handler(fouroone),
                                             prefix=prefix, port=port)
 

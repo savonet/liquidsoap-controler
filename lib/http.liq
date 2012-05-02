@@ -26,12 +26,12 @@ def http.authenticate.basic(~user, ~password, ~headers) =
 end
 
 # Default 404 handler
-def http.controler.fourofour(~data, ~headers, ~uri, ~params, response) =
+def controler.http.fourofour(~data, ~headers, ~uri, ~params, response) =
   response(code=404, headers=[], "Page not found!")
 end
 
 # Default 401 handler
-def http.controler.fouroone(~data, ~headers, ~uri, ~params, response) =
+def controler.http.fouroone(~data, ~headers, ~uri, ~params, response) =
   headers = [("WWW-Authenticate", "Basic realm=\"Liquidsoap Controler\"")]
   response(code=401, headers=headers, "Unauthorized!")
 end
@@ -41,8 +41,8 @@ end
 # @param ~fouroone Handler used when authentication failed
 # @param ~prefix Prefix for all registered endpoints.
 # @param ~port Registered port
-def http.enable_controler(~fourofour=http.controler.fourofour,
-                          ~fouroone=http.controler.fouroone, 
+def controler.enable_http(~fourofour=controler.http.fourofour,
+                          ~fouroone=controler.http.fouroone, 
                           ~prefix="/", ~port) =
   # Registered endpoints, contains values
   # of the form: (("uri", "method"), handler)

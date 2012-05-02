@@ -4,7 +4,7 @@ auth = new Buffer("test:test").toString("base64")
 
 var headers = {
   "Accept": "application/json",
-  "Authorization": "Basic " + this.auth
+  "Authorization": "Basic " + auth
 }
 
 var options = {
@@ -41,8 +41,6 @@ var push = function () {
   options.path   = "/requests/foo";
 
   var data = JSON.stringify(["/tmp/foo.mp3"]);
-
-  data = JSON.stringify(data);
 
   options.headers["Content-Type"] =  "application/json";
   options.headers["Content-Length"] = data.length;
