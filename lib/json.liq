@@ -3,11 +3,6 @@
 # Default json headers
 json_headers = [("Content-Type","application/json; charset=utf-8")]
 
-# 404 handler that returns json data
-def controler.json.fourofour(~data, ~headers, ~uri, ~params, response) =
-  response(code=404, headers=[], [("error","Page not found!")])
-end
-
 # Default 200 response
 def controler.json.twooo(~data=[],response) =
   response(code=200, headers=[], data)
@@ -23,8 +18,7 @@ end
 # it _always_ returns json data. Consequently, 
 # called handler should _never_ set Content-Type
 # header.
-def controler.enable_json(~fourofour=controler.json.fourofour, 
-                          ~fouroone=controler.json.fouroone, 
+def controler.enable_json(~fouroone=controler.json.fouroone, 
                           ~prefix="/", ~port) =
   # Wrap a handler
   def wrap_handler(handler) =
@@ -41,8 +35,7 @@ def controler.enable_json(~fourofour=controler.json.fourofour,
   end
 
   # Register to main controler
-  register_endpoint = controler.enable_http(fourofour=wrap_handler(fourofour),
-                                            fouroone=wrap_handler(fouroone),
+  register_endpoint = controler.enable_http(fouroone=wrap_handler(fouroone),
                                             prefix=prefix, port=port)
 
   # Wrap registered endpoints

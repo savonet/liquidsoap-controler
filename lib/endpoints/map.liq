@@ -32,16 +32,15 @@ def controler.json.endpoints.metadata.get(~register) =
     end
 
     # Register the endpoint
-    register(method="GET", uri="/metadata/get/#{name}", get_meta)
+    register(method="GET", uri="/metadata/#{name}", get_meta)
 
     # Return source
     on_metadata(id=name,update_meta,source)
   end
-  controler.json.endpoints.map_source(register=register, "metadata/get", map)
+  controler.json.endpoints.map_source(register=register, "get_metadata", map)
 end
 
-#Bug!
-#controler.json.endpoints.register(controler.json.endpoints.metadata.get)
+controler.json.endpoints.register(controler.json.endpoints.metadata.get)
 
 # Register an endpoint to set a source's metadata
 # @param ~register HTTP controler register handler
@@ -68,16 +67,15 @@ def controler.json.endpoints.metadata.set(~register) =
     end
 
     # Register the endpoint
-    register(method="POST", uri="/metadata/set/#{name}", set_meta)
+    register(method="POST", uri="/metadata/#{name}", set_meta)
 
     # return new source
     source
   end
-  controler.json.endpoints.map_source(register=register, "metadata/set", map)
+  controler.json.endpoints.map_source(register=register, "set_metadata", map)
 end
 
-#Bug!
-#controler.json.endpoints.register(controler.json.endpoints.metadata.set)
+controler.json.endpoints.register(controler.json.endpoints.metadata.set)
 
 # Register an endpoint to create a fallback source.
 # @param ~register HTTP controler register handler
