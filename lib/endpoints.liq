@@ -4,21 +4,34 @@
 # PRIVATE API #
 ###############
 
-def controler.json.endpoints.apply_source(~register, name, apply) =
+def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
   # Handler
   def apply(~data, ~headers, ~uri, ~params, response) =
     error   = ["error"]
-    options = of_json(default=error, data)
+    options = 
+       if data == "" then
+         []
+       else
+         of_json(default=error, data)
+       end
 
     if options == error then
       response(code=400,headers=[],[("error","Parse error")])
     else
-      controler.json.twooo(data=apply(name, options),response)
+      controler.json.twooo(data=apply(options),response)
     end
   end
 
   # Register the endpoint
-  register(method="POST", uri="/#{name}", apply)
+  register(method=method, uri="/#{name}", apply)
+end
+
+%include "endpoints/apply.liq"
+
+# Apply of all generic callbacks to a given source
+def controler.json.endpoints.generic(~register, ~name, source) =
+  controler.json.endpoints.requests.skip(register=register,name=name,source)
+  controler.json.endpoints.requests.shutdown(register=register,name=name,source)
 end
 
 def controler.json.endpoints.map_source(~register, name, map) =
@@ -73,7 +86,14 @@ def controler.json.endpoints.map_sources(~register, name, map) =
         failed = string.concat(separator=", ", !failed)
         response(code=400,headers=[],[("error","Missing sources: #{failed}")])
       else
-        controler.set_source(name, map(name, sources, options))
+        # Get new source
+        source = map(name, sources, options)
+ 
+        # Register it within the controler
+        controler.set_source(name, source)
+
+        # Register generic endpoints
+        controler.json.endpoints.generic(register=register,name=name,source)
 
         controler.json.twooo(response)
       end
@@ -90,10 +110,15 @@ def controler.json.endpoints.create_source(~register, name, create) =
     ret  = string.extract(pattern="/#{name}/([^/]+)", uri)
     name = ret["1"]
 
-    # Register it within the controler.
-    controler.set_source(name, create(name, data))
+    # Get new source
+    source = create(name, data)
 
-    # Enable request push on this source.
+    # Register it within the controler.
+    controler.set_source(name, source)
+
+    # Register generic endpoints
+    controler.json.endpoints.generic(register=register,name=name,source)
+
     controler.json.twooo(response)
   end
 
@@ -132,7 +157,6 @@ end
 
 # Now include them
 
-%include "endpoints/apply.liq"
 %include "endpoints/create.liq"
 %include "endpoints/map.liq"
 %include "endpoints/output.liq"
