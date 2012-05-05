@@ -30,3 +30,17 @@ def controler.json.endpoints.create.single(~register) =
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.single)
+
+# Register an endpoint to create a blank source.
+# @param ~register HTTP controler register handler
+def controler.json.endpoints.create.blank(~register) =
+  def create(name, options) =
+    duration = of_json(default=0.,options)
+    blank(id=name, duration=duration)
+  end
+
+  controler.json.endpoints.create_source(register=register, "blank", create)
+end
+
+controler.json.endpoints.register(controler.json.endpoints.create.blank)
+

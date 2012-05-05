@@ -19,7 +19,7 @@ def controler.json.endpoints.metadata.get(~register) =
     # converted in UTF8
     def update_meta(m) =
       m      = metadata.export(m)
-     recode = string.recode(out_enc="UTF-8")
+      recode = string.recode(out_enc="UTF-8")
       def f(x) =
         (recode(fst(x)),recode(snd(x)))
       end
