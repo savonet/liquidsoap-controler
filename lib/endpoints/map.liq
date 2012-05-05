@@ -1,14 +1,3 @@
-# Register an endpoint to create a mksafe(source).
-# @param ~register HTTP controler register handler
-def controler.json.endpoints.mksafe(~register) =
-  def map(name, source, options) =
-    mksafe(source)
-  end
-  controler.json.endpoints.map_source(register=register, "mksafe", map)
-end
-
-controler.json.endpoints.register(controler.json.endpoints.mksafe)
-
 # Register an endpoint to fetch a source's metadata
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.metadata.get(~register) =
