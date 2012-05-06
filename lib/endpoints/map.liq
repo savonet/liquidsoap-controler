@@ -21,7 +21,7 @@ def controler.json.endpoints.metadata.get(~register) =
     end
 
     # Register the endpoint
-    register(method="GET", uri="/metadata/#{name}", get_meta)
+    register(method="GET", uri="/sources/#{name}/metadata", get_meta)
 
     # Return source
     on_metadata(id=name,update_meta,source)
@@ -56,7 +56,7 @@ def controler.json.endpoints.metadata.set(~register) =
     end
 
     # Register the endpoint
-    register(method="POST", uri="/metadata/#{name}", set_meta)
+    register(method="POST", uri="/sources/#{name}/metadata", set_meta)
 
     # return new source
     source

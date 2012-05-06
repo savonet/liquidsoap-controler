@@ -1,5 +1,3 @@
-# Register an endpoint to push a request to a given source
-# @param ~register HTTP controler register handler
 def controler.json.endpoints.requests.push(~register, ~name, source) =
   def apply(options) =
     def push(cur, request) =
@@ -8,23 +6,33 @@ def controler.json.endpoints.requests.push(~register, ~name, source) =
     end
     list.fold(push, [], options)
   end
-  controler.json.endpoints.apply_source(register=register,method="POST","requests/#{name}",apply)
+  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/requests",apply)
 end
 
-def controler.json.endpoints.requests.skip(~register, ~name, source) =
+def controler.json.endpoints.skip(~register, ~name, source) =
   def apply(options) =
     source.skip(source)
     []
   end
-  controler.json.endpoints.apply_source(register=register,method="POST","sources/skip/#{name}",apply)
+  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/skip",apply)
 end
 
-def controler.json.endpoints.requests.shutdown(~register, ~name, source) =
+def controler.json.endpoints.shutdown(~register, ~name, source) =
   def apply(options) =
     source.shutdown(source)
     []
   end
-  controler.json.endpoints.apply_source(register=register,method="DELETE","sources/#{name}",apply)
+  controler.json.endpoints.apply_source(register=register,method="DELETE","#{name}",apply)
 end
 
-# No registration for this one, enable on a per-source basis!
+def controler.json.endpoints.stateful(~register, ~name, source) =
+  def apply(action, options) =
+    lines = server.execute("#{source.id(source)}.#{action}")
+    [("result", string.concat(separator="\n", lines))]
+  end
+  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/start", apply("start"))
+  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/stop",  apply("stop"))
+  controler.json.endpoints.apply_source(register=register,method="GET","#{name}/status",apply("status"))
+end
+
+# No registration for these guys, enable on a per-source basis!

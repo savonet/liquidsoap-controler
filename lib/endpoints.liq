@@ -23,15 +23,15 @@ def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
   end
 
   # Register the endpoint
-  register(method=method, uri="/#{name}", apply)
+  register(method=method, uri="/sources/#{name}", apply)
 end
 
 %include "endpoints/apply.liq"
 
 # Apply of all generic callbacks to a given source
 def controler.json.endpoints.generic(~register, ~name, source) =
-  controler.json.endpoints.requests.skip(register=register,name=name,source)
-  controler.json.endpoints.requests.shutdown(register=register,name=name,source)
+  controler.json.endpoints.skip(register=register,name=name,source)
+  controler.json.endpoints.shutdown(register=register,name=name,source)
 end
 
 def controler.json.endpoints.map_source(~register, name, map) =
@@ -133,9 +133,14 @@ def controler.json.endpoints.output_source(~register, name, output) =
     name  = ret["1"]
 
      if controler.is_defined(name) then
+       # Grab source
        source = controler.get_source(name)
 
+       # Register it
        controler.set_source(name, output(fallible=source.fallible(source), source, data))
+
+       # Add start/stop/status endpoints
+       controler.json.endpoints.stateful(register=register,name=name,source)
 
        controler.json.twooo(response)
      else

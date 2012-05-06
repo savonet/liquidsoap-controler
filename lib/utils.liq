@@ -32,3 +32,18 @@ def list.assoc(~default,a,l)
   end
   list.fold(f,default,l)
 end
+
+# Grab a boolean option
+def options.bool(~default, key, options) =
+  bool_of_string(default=default,list.assoc(default="#{default}",key,options))
+end
+
+# Grab a float option
+def options.float(~default, key, options) =
+  float_of_string(default=default,list.assoc(default="#{default}",key,options))
+end
+
+# Grab a string option.
+def options.string(~default, key, options) =
+  list.assoc(default=default,key,options)
+end
