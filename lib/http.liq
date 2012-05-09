@@ -33,7 +33,7 @@ end
 
 # Default headers, contains generic access-control stuff..
 controler.http.default_headers =
-  [("Access-Control-Allow-Headers", "Content-Type, Accept"),
+  [("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type"),
    ("Access-Control-Allow-Methods", "PUT,GET,POST,DELETE"),
    ("Access-Control-Allow-Origin",  "*")]
 

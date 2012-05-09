@@ -17,7 +17,7 @@ def controler.json.endpoints.metadata.get(~register) =
 
     # Return the json content of meta
     def get_meta(~data, ~headers, ~uri, ~params, response) =
-      controler.json.twooo(data=!meta,response)
+      response(code=200,headers=[],!meta)
     end
 
     # Register the endpoint
@@ -51,7 +51,7 @@ def controler.json.endpoints.metadata.set(~register) =
         response(code=400,headers=[],error)
       else
         insert(parsed)
-        controler.json.twooo(response)
+        response(code=200,headers=[],[])
       end
     end
 
@@ -70,7 +70,7 @@ controler.json.endpoints.register(controler.json.endpoints.metadata.set)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.fallback(~register) =
   def map(name, sources, options) =
-    track_sensitive = list.mem("track_sensitive", options)
+    track_sensitive = bool_of_string(default=true,options["track_sensitive"])
 
     fallback(id=name,track_sensitive=track_sensitive, sources)
   end

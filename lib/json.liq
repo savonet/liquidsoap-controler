@@ -3,11 +3,6 @@
 # Default json headers
 json_headers = [("Content-Type","application/json; charset=utf-8")]
 
-# Default 200 response
-def controler.json.twooo(~data=[],response) =
-  response(code=200, headers=[], data)
-end
-
 # Default 401 handler
 def controler.json.fouroone(~data, ~headers, ~uri, ~params, response) =
   headers = [("WWW-Authenticate", "Basic realm=\"Liquidsoap Controler\"")]

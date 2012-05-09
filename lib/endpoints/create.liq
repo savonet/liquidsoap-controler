@@ -22,7 +22,7 @@ controler.json.endpoints.register(controler.json.endpoints.create.request.queue)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.single(~register) =
   def create(name, options) =
-    uri = of_json(default="",options)
+    uri = options["uri"]
     single(id=name, uri)
   end
 
@@ -35,7 +35,7 @@ controler.json.endpoints.register(controler.json.endpoints.create.single)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.blank(~register) =
   def create(name, options) =
-    duration = of_json(default=0.,options)
+    duration = float_of_string(default=0.,options["duration"])
     blank(id=name, duration=duration)
   end
 
@@ -48,8 +48,6 @@ controler.json.endpoints.register(controler.json.endpoints.create.blank)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.input.http(~register) =
   def create(name, options) =
-    options = of_json(default=[("foo", "bar")],options)
-
     autostart     = options.bool(default=true, "autostart",             options)
     bind_address  = options.string(default="", "bind_address",          options)
     buffer        = options.float(default=2.,  "buffer",                options)

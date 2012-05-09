@@ -18,7 +18,7 @@ def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
     if options == error then
       response(code=400,headers=[],[("error","Parse error")])
     else
-      controler.json.twooo(data=apply(options),response)
+      response(code=200,headers=[],apply(options))
     end
   end
 
@@ -37,42 +37,53 @@ end
 def controler.json.endpoints.map_source(~register, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
-    ret   = string.extract(pattern="/#{name}/([^/]+)", uri)
-    name  = ret["1"]
+    error  = [("error","Parse error")]
+    params = of_json(default=error, data) 
+    name   = params["name"]
+    source = params["source"]
 
-     if controler.is_defined(name) then
-       source = controler.get_source(name)
+    if params == error then
+      response(code=400,headers=[],error)
+    elsif name == "" then
+      response(code=400,headers=[],[("error","No name params")])
+    elsif source == "" then
+      response(code=400,headers=[],[("error","No source param")])
+    elsif not controler.is_defined(source) then
+      response(code=400,headers=[],[("error","Missing source: #{name}")])
+    else
+      source = controler.get_source(source)
 
-       controler.set_source(name, map(name, source, data))
+      controler.set_source(name, map(name, source, data))
 
-       controler.json.twooo(response)
-     else
-       response(code=400,headers=[],[("error","Missing source: #{name}")])
+      response(code=201, headers=[], []) 
      end
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}/[^/]+", create_source)
+  register(method="PUT", uri="/#{name}", create_source)
 end
 
 def controler.json.endpoints.map_sources(~register, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
-    error  = [("error", ["invalid data"])]
+    error  = [("error", [("some","invalid data")])]
     parsed = of_json(default=error, data)
     sources = list.assoc(default=[], "sources", parsed)
     options = list.assoc(default=[], "options", parsed)
+    name    = options["name"]
+
     if parsed == error then
       response(code=400,headers=[],[("error","Parse error")])
+    elsif name == "" then
+      response(code=400,headers=[],[("error","No name param")])
     elsif sources == [] then
       response(code=400,headers=[],[("error","No sources!")])
     else
-      ret   = string.extract(pattern="/#{name}/([^/]+)", uri)
-      name  = ret["1"]
-
       # Grab all sources
       failed = ref []
-      def f(name) =
+      def f(el) =
+        # TODO: Do something with second argument.. Define transition ?
+        name = fst(el)
         if controler.is_defined(name) then
           controler.get_source(name)
         else
@@ -95,61 +106,73 @@ def controler.json.endpoints.map_sources(~register, name, map) =
         # Register generic endpoints
         controler.json.endpoints.generic(register=register,name=name,source)
 
-        controler.json.twooo(response)
+        response(code=201,headers=[],[])
       end
     end
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}/[^/]+", create_source)
+  register(method="PUT", uri="/#{name}", create_source)
 end
 
 def controler.json.endpoints.create_source(~register, name, create) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
-    ret  = string.extract(pattern="/#{name}/([^/]+)", uri)
-    name = ret["1"]
+    error   = [("error","Parse error")]
+    options = of_json(default=error,data) 
+    name    = options["name"]
 
-    # Get new source
-    source = create(name, data)
+    if name == "" then
+      response(code=400,headers=[],[("error","No name param")])
+    else
+      # Get new source
+      source = create(name, options)
 
-    # Register it within the controler.
-    controler.set_source(name, source)
+      # Register it within the controler.
+      controler.set_source(name, source)
 
-    # Register generic endpoints
-    controler.json.endpoints.generic(register=register,name=name,source)
+      # Register generic endpoints
+      controler.json.endpoints.generic(register=register,name=name,source)
 
-    controler.json.twooo(response)
+      response(code=201,headers=[],[])
+    end
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}/[^/]+", create_source)
+  register(method="PUT", uri="/#{name}", create_source)
 end
 
+# TODO: params!
 def controler.json.endpoints.output_source(~register, name, output) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
-    ret   = string.extract(pattern="/output/#{name}/([^/]+)", uri)
-    name  = ret["1"]
+    error   = [("error","Parse error")]
+    options = of_json(default=error,data)
+    name    = options["name"]
+    source  = options["source"]
 
-     if controler.is_defined(name) then
-       # Grab source
-       source = controler.get_source(name)
+    if name == "" then
+      response(code=400,headers=[],[("error","No name param")])
+    elsif source == "" then
+      response(code=400,headers=[],[("error","No source param")])
+    elsif not controler.is_defined(source) then
+      response(code=400,headers=[],[("error","Missing source: #{source}")])
+    else
+      # Grab source
+      source = controler.get_source(source)
 
-       # Register it
-       controler.set_source(name, output(fallible=source.fallible(source), source, data))
+      # Register it
+      controler.set_source(name, output(fallible=source.fallible(source), source, data))
 
-       # Add start/stop/status endpoints
-       controler.json.endpoints.stateful(register=register,name=name,source)
+      # Add start/stop/status endpoints
+      controler.json.endpoints.stateful(register=register,name=name,source)
 
-       controler.json.twooo(response)
-     else
-       response(code=400,headers=[],[("error","Missing source: #{name}")])
-     end
+      response(code=201,headers=[],[])  
+    end
   end
 
   # Register handler
-  register(method="PUT", uri="/output/#{name}/[^/]+", create_source)
+  register(method="PUT", uri="/output/#{name}", create_source)
 end
 
 # List of endpoints
