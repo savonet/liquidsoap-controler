@@ -2,8 +2,15 @@
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.request.queue(~register, ~remove) =
   def create(name,options) =
+    conservative     = options.bool(default=false, "conservative", options)
+    default_duration = options.float(default=30., "default_duration", options)
+    length           = options.float(default=10., "length", options)
+    timeout          = options.float(default=20., "timeout", options)
+
     # Create source
-    source = request.queue(id=name)
+    source = request.queue(id=name,conservative=conservative,
+                           default_duration=default_duration,
+                           length=length,timeout=timeout)
 
     # Enable request push on this source.
     controler.json.endpoints.requests.push(register=register,name=name,source)
@@ -22,11 +29,43 @@ controler.json.endpoints.register(controler.json.endpoints.create.request.queue)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.single(~register, ~remove) =
   def create(name, options) =
-    uri = options["uri"]
-    single(id=name, uri)
+    uri              = options["uri"]
+    conservative     = options.bool(default=false, "conservative", options)
+    default_duration = options.float(default=30., "default_duration", options)
+    length           = options.float(default=10., "length", options)
+    timeout          = options.float(default=20., "timeout", options)
+
+    single(id=name,conservative=conservative,
+           default_duration=default_duration,
+           length=length,timeout=timeout,uri)
   end
 
   controler.json.endpoints.create_source(register=register, remove=remove, "single", create)
+end
+
+controler.json.endpoints.register(controler.json.endpoints.create.single)
+
+# Register an endpoint to create a request.dynamic source.
+# For now, the callback is a trivial function () -> uri.
+# @param ~register HTTP controler register handler
+def controler.json.endpoints.create.single(~register, ~remove) =
+  def create(name, options) =
+    uri              = options["uri"]
+    conservative     = options.bool(default=false, "conservative", options)
+    default_duration = options.float(default=30., "default_duration", options)
+    length           = options.float(default=10., "length", options)
+    timeout          = options.float(default=20., "timeout", options)
+
+    def f() = 
+      request.create(uri)
+    end
+
+    request.dynamic(id=name,conservative=conservative,
+                    default_duration=default_duration,
+                    length=length,timeout=timeout,f)
+  end
+
+  controler.json.endpoints.create_source(register=register, remove=remove, "request/dynamic", create)
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.single)
@@ -35,7 +74,7 @@ controler.json.endpoints.register(controler.json.endpoints.create.single)
 # @param ~register HTTP controler register handler
 def controler.json.endpoints.create.blank(~register, ~remove) =
   def create(name, options) =
-    duration = float_of_string(default=0.,options["duration"])
+    duration = options.float(default=0.,"duration",options)
     blank(id=name, duration=duration)
   end
 
