@@ -22,19 +22,27 @@ def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
     end
   end
 
+  # Endpoint's uri
+  uri = "/sources/#{name}"
+
   # Register the endpoint
-  register(method=method, uri="/sources/#{name}", apply)
+  register(method=method, uri=uri, apply)
+
+  # Add it to that source'endpoints
+  # name is _always_ of the form: source_name(/foo/bar)
+  name = list.hd(string.split(separator="/",name))
+  controler.add_endpoint((method,uri), name)
 end
 
 %include "endpoints/apply.liq"
 
 # Apply of all generic callbacks to a given source
-def controler.json.endpoints.generic(~register, ~name, source) =
+def controler.json.endpoints.generic(~register, ~remove, ~name, source) =
   controler.json.endpoints.skip(register=register,name=name,source)
-  controler.json.endpoints.shutdown(register=register,name=name,source)
+  controler.json.endpoints.shutdown(register=register,remove=remove,name=name,source)
 end
 
-def controler.json.endpoints.map_source(~register, name, map) =
+def controler.json.endpoints.map_source(~register, ~remove, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     error  = [("error","Parse error")]
@@ -51,9 +59,17 @@ def controler.json.endpoints.map_source(~register, name, map) =
     elsif not controler.is_defined(source) then
       response(code=400,headers=[],[("error","Missing source: #{name}")])
     else
-      source = controler.get_source(source)
+      # Get source
+      s      = controler.get_source(source)
+      mapped = map(name, s, data)
 
-      controler.set_source(name, map(name, source, data))
+      # Register it
+      controler.set_source(name, mapped)
+
+      # If name != source, register generic endpoints
+      if name != source then
+        controler.json.endpoints.generic(register=register,remove=remove,name=name,mapped)
+      end
 
       response(code=201, headers=[], []) 
      end
@@ -63,7 +79,7 @@ def controler.json.endpoints.map_source(~register, name, map) =
   register(method="PUT", uri="/#{name}", create_source)
 end
 
-def controler.json.endpoints.map_sources(~register, name, map) =
+def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     error  = [("error", [("some","invalid data")])]
@@ -104,7 +120,7 @@ def controler.json.endpoints.map_sources(~register, name, map) =
         controler.set_source(name, source)
 
         # Register generic endpoints
-        controler.json.endpoints.generic(register=register,name=name,source)
+        controler.json.endpoints.generic(register=register,remove=remove,name=name,source)
 
         response(code=201,headers=[],[])
       end
@@ -115,7 +131,7 @@ def controler.json.endpoints.map_sources(~register, name, map) =
   register(method="PUT", uri="/#{name}", create_source)
 end
 
-def controler.json.endpoints.create_source(~register, name, create) =
+def controler.json.endpoints.create_source(~register, ~remove, name, create) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     error   = [("error","Parse error")]
@@ -132,7 +148,7 @@ def controler.json.endpoints.create_source(~register, name, create) =
       controler.set_source(name, source)
 
       # Register generic endpoints
-      controler.json.endpoints.generic(register=register,name=name,source)
+      controler.json.endpoints.generic(register=register,remove=remove,name=name,source)
 
       response(code=201,headers=[],[])
     end
@@ -143,7 +159,7 @@ def controler.json.endpoints.create_source(~register, name, create) =
 end
 
 # TODO: params!
-def controler.json.endpoints.output_source(~register, name, output) =
+def controler.json.endpoints.output_source(~register, ~remove, name, output) =
   # Handler
   def create_source(~data, ~headers, ~uri, ~params, response) =
     error   = [("error","Parse error")]
@@ -158,14 +174,20 @@ def controler.json.endpoints.output_source(~register, name, output) =
     elsif not controler.is_defined(source) then
       response(code=400,headers=[],[("error","Missing source: #{source}")])
     else
-      # Grab source
-      source = controler.get_source(source)
+      # Create output
+      s      = controler.get_source(source)
+      output = output(fallible=source.fallible(s), s, data) 
 
       # Register it
-      controler.set_source(name, output(fallible=source.fallible(source), source, data))
+      controler.set_source(name, output)
+
+      # If name != source, register generic endpoints
+      if name != source then
+        controler.json.endpoints.generic(register=register,remove=remove,name=name,output)
+      end
 
       # Add start/stop/status endpoints
-      controler.json.endpoints.stateful(register=register,name=name,source)
+      controler.json.endpoints.stateful(register=register,name=name,output)
 
       response(code=201,headers=[],[])  
     end
@@ -194,6 +216,6 @@ end
 ##############
 
 # Enable all existing endpoints using a given register
-def controler.json.endpoints.enable_all(~register) =
-  list.iter(fun (f) -> f(register=register), !controler.json.endpoints.all)
+def controler.json.endpoints.enable_all(~register, ~remove) =
+  list.iter(fun (f) -> f(register=register,remove=remove), !controler.json.endpoints.all)
 end

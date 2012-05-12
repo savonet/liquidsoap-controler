@@ -74,7 +74,11 @@ def controler.enable_http(~fouroone=controler.http.fouroone,
 
     # Register endpoint
     harbor.http.register(port=port, method=method, uri, handler)
+  end
 
+  # Remove an endpoint
+  def remove_endpoint(~method, uri) =
+    harbor.http.remove(port=port, method=method, uri)
   end
 
   # Register default OPTIONS endpoint
@@ -83,5 +87,5 @@ def controler.enable_http(~fouroone=controler.http.fouroone,
   end
   harbor.http.register(port=port, method="OPTIONS", ".*", handler)
 
-  register_endpoint
+  (register_endpoint,remove_endpoint)
 end

@@ -17,9 +17,21 @@ def controler.json.endpoints.skip(~register, ~name, source) =
   controler.json.endpoints.apply_source(register=register,method="POST","#{name}/skip",apply)
 end
 
-def controler.json.endpoints.shutdown(~register, ~name, source) =
+def controler.json.endpoints.shutdown(~register, ~remove, ~name, source) =
   def apply(options) =
+    # Shutdown source
     source.shutdown(source)
+ 
+    # Its its endpoints
+    endpoints = controler.get_endpoints(name)
+    def remove(endpoint) =
+      method = fst(endpoint)
+      uri    = snd(endpoint)
+
+      remove(method=method,uri)
+    end
+    list.iter(remove, endpoints)
+
     []
   end
   controler.json.endpoints.apply_source(register=register,method="DELETE","#{name}",apply)

@@ -30,8 +30,10 @@ def controler.enable_json(~fouroone=controler.json.fouroone,
   end
 
   # Register to main controler
-  register_endpoint = controler.enable_http(fouroone=wrap_handler(fouroone),
-                                            prefix=prefix, port=port)
+  x = controler.enable_http(fouroone=wrap_handler(fouroone),
+        prefix=prefix, port=port)
+  register_endpoint = fst(x)
+  remove_endpoint   = snd(x)
 
   # Wrap registered endpoints
   def register_endpoint(~user, ~password, ~uri, ~method, handler) =
@@ -39,5 +41,5 @@ def controler.enable_json(~fouroone=controler.json.fouroone,
                       wrap_handler(handler))
   end
 
-  register_endpoint
+  (register_endpoint,remove_endpoint)
 end

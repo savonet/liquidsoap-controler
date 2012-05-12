@@ -1,6 +1,6 @@
 # Register an endpoint to create a request.queue source.
 # @param ~register HTTP controler register handler
-def controler.json.endpoints.create.request.queue(~register) =
+def controler.json.endpoints.create.request.queue(~register, ~remove) =
   def create(name,options) =
     # Create source
     source = request.queue(id=name)
@@ -12,7 +12,7 @@ def controler.json.endpoints.create.request.queue(~register) =
     source
   end
 
-  controler.json.endpoints.create_source(register=register, "request/queue", create)
+  controler.json.endpoints.create_source(register=register, remove=remove, "request/queue", create)
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.request.queue)
@@ -20,33 +20,33 @@ controler.json.endpoints.register(controler.json.endpoints.create.request.queue)
 
 # Register an endpoint to create a single source.
 # @param ~register HTTP controler register handler
-def controler.json.endpoints.create.single(~register) =
+def controler.json.endpoints.create.single(~register, ~remove) =
   def create(name, options) =
     uri = options["uri"]
     single(id=name, uri)
   end
 
-  controler.json.endpoints.create_source(register=register, "single", create)
+  controler.json.endpoints.create_source(register=register, remove=remove, "single", create)
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.single)
 
 # Register an endpoint to create a blank source.
 # @param ~register HTTP controler register handler
-def controler.json.endpoints.create.blank(~register) =
+def controler.json.endpoints.create.blank(~register, ~remove) =
   def create(name, options) =
     duration = float_of_string(default=0.,options["duration"])
     blank(id=name, duration=duration)
   end
 
-  controler.json.endpoints.create_source(register=register, "blank", create)
+  controler.json.endpoints.create_source(register=register, remove=remove, "blank", create)
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.blank)
 
 # Register an endpoint to create a input.http source.
 # @param ~register HTTP controler register handler
-def controler.json.endpoints.create.input.http(~register) =
+def controler.json.endpoints.create.input.http(~register, ~remove) =
   def create(name, options) =
     autostart     = options.bool(default=true, "autostart",             options)
     bind_address  = options.string(default="", "bind_address",          options)
@@ -77,7 +77,7 @@ def controler.json.endpoints.create.input.http(~register) =
     source
   end
 
-  controler.json.endpoints.create_source(register=register, "input/http", create)
+  controler.json.endpoints.create_source(register=register, remove=remove, "input/http", create)
 end
 
 controler.json.endpoints.register(controler.json.endpoints.create.input.http)
