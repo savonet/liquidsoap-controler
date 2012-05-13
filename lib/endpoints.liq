@@ -76,7 +76,7 @@ def controler.json.endpoints.map_source(~register, ~remove, name, map) =
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}", create_source)
+  register(method="POST", uri="/#{name}", create_source)
 end
 
 def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
@@ -128,7 +128,7 @@ def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}", create_source)
+  register(method="POST", uri="/#{name}", create_source)
 end
 
 def controler.json.endpoints.create_source(~register, ~remove, name, create) =
@@ -155,7 +155,7 @@ def controler.json.endpoints.create_source(~register, ~remove, name, create) =
   end
 
   # Register handler
-  register(method="PUT", uri="/#{name}", create_source)
+  register(method="POST", uri="/#{name}", create_source)
 end
 
 # TODO: params!
@@ -194,7 +194,7 @@ def controler.json.endpoints.output_source(~register, ~remove, name, output) =
   end
 
   # Register handler
-  register(method="PUT", uri="/output/#{name}", create_source)
+  register(method="POST", uri="/output/#{name}", create_source)
 end
 
 # List of endpoints

@@ -6,7 +6,7 @@ def controler.json.endpoints.requests.push(~register, ~name, source) =
     end
     list.fold(push, [], options)
   end
-  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/requests",apply)
+  controler.json.endpoints.apply_source(register=register,method="PUT","#{name}/requests",apply)
 end
 
 def controler.json.endpoints.skip(~register, ~name, source) =
@@ -14,7 +14,7 @@ def controler.json.endpoints.skip(~register, ~name, source) =
     source.skip(source)
     []
   end
-  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/skip",apply)
+  controler.json.endpoints.apply_source(register=register,method="PUT","#{name}/skip",apply)
 end
 
 def controler.json.endpoints.shutdown(~register, ~remove, ~name, source) =
@@ -42,8 +42,8 @@ def controler.json.endpoints.stateful(~register, ~name, source) =
     lines = server.execute("#{source.id(source)}.#{action}")
     [("result", string.concat(separator="\n", lines))]
   end
-  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/start", apply("start"))
-  controler.json.endpoints.apply_source(register=register,method="POST","#{name}/stop",  apply("stop"))
+  controler.json.endpoints.apply_source(register=register,method="PUT","#{name}/start", apply("start"))
+  controler.json.endpoints.apply_source(register=register,method="PUT","#{name}/stop",  apply("stop"))
   controler.json.endpoints.apply_source(register=register,method="GET","#{name}/status",apply("status"))
 end
 

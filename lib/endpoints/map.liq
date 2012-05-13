@@ -63,7 +63,7 @@ def controler.json.endpoints.metadata.set(~register, ~remove) =
     end
 
     # Endpoint's method and uri
-    method = "POST"
+    method = "PUT"
     uri    = "/sources/#{name}/metadata"
 
     # Register the endpoint
