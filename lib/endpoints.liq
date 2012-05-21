@@ -4,6 +4,14 @@
 # PRIVATE API #
 ###############
 
+def controler.json.endpoints.sources(~register,~remove) =
+  def handler(~data, ~headers, ~uri, ~params, response) =
+    response(code=200,headers=[],json_of(list.map(fst,!controler.sources)))
+  end
+
+  register(method="GET", uri="^/sources$", handler)
+end
+
 def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
   # Handler
   def apply(~data, ~headers, ~uri, ~params, response) =
@@ -16,9 +24,9 @@ def controler.json.endpoints.apply_source(~register, ~method, name, apply) =
        end
 
     if options == error then
-      response(code=400,headers=[],[("error","Parse error")])
+      response(code=400,headers=[],json_of([("error","Parse error")]))
     else
-      response(code=200,headers=[],apply(options))
+      response(code=200,headers=[],json_of(apply(options)))
     end
   end
 
@@ -51,13 +59,13 @@ def controler.json.endpoints.map_source(~register, ~remove, name, map) =
     source = params["source"]
 
     if params == error then
-      response(code=400,headers=[],error)
+      response(code=400,headers=[],json_of(error))
     elsif name == "" then
-      response(code=400,headers=[],[("error","No name params")])
+      response(code=400,headers=[],json_of([("error","No name params")]))
     elsif source == "" then
-      response(code=400,headers=[],[("error","No source param")])
+      response(code=400,headers=[],json_of([("error","No source param")]))
     elsif not controler.is_defined(source) then
-      response(code=400,headers=[],[("error","Missing source: #{name}")])
+      response(code=400,headers=[],json_of([("error","Missing source: #{name}")]))
     else
       # Get source
       s      = controler.get_source(source)
@@ -71,7 +79,7 @@ def controler.json.endpoints.map_source(~register, ~remove, name, map) =
         controler.json.endpoints.generic(register=register,remove=remove,name=name,mapped)
       end
 
-      response(code=201, headers=[], []) 
+      response(code=201, headers=[], "") 
      end
   end
 
@@ -89,11 +97,11 @@ def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
     name    = options["name"]
 
     if parsed == error then
-      response(code=400,headers=[],[("error","Parse error")])
+      response(code=400,headers=[],json_of([("error","Parse error")]))
     elsif name == "" then
-      response(code=400,headers=[],[("error","No name param")])
+      response(code=400,headers=[],json_of([("error","No name param")]))
     elsif sources == [] then
-      response(code=400,headers=[],[("error","No sources!")])
+      response(code=400,headers=[],json_of([("error","No sources!")]))
     else
       # Grab all sources
       failed = ref []
@@ -111,7 +119,7 @@ def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
 
       if list.length(!failed) > 0 then
         failed = string.concat(separator=", ", !failed)
-        response(code=400,headers=[],[("error","Missing sources: #{failed}")])
+        response(code=400,headers=[],json_of([("error","Missing sources: #{failed}")]))
       else
         # Get new source
         source = map(name, sources, options)
@@ -122,7 +130,7 @@ def controler.json.endpoints.map_sources(~register, ~remove, name, map) =
         # Register generic endpoints
         controler.json.endpoints.generic(register=register,remove=remove,name=name,source)
 
-        response(code=201,headers=[],[])
+        response(code=201,headers=[],"")
       end
     end
   end
@@ -139,7 +147,7 @@ def controler.json.endpoints.create_source(~register, ~remove, name, create) =
     name    = options["name"]
 
     if name == "" then
-      response(code=400,headers=[],[("error","No name param")])
+      response(code=400,headers=[],json_of([("error","No name param")]))
     else
       # Get new source
       source = create(name, options)
@@ -150,7 +158,7 @@ def controler.json.endpoints.create_source(~register, ~remove, name, create) =
       # Register generic endpoints
       controler.json.endpoints.generic(register=register,remove=remove,name=name,source)
 
-      response(code=201,headers=[],[])
+      response(code=201,headers=[],"")
     end
   end
 
@@ -168,11 +176,11 @@ def controler.json.endpoints.output_source(~register, ~remove, name, output) =
     source  = options["source"]
 
     if name == "" then
-      response(code=400,headers=[],[("error","No name param")])
+      response(code=400,headers=[],json_of([("error","No name param")]))
     elsif source == "" then
-      response(code=400,headers=[],[("error","No source param")])
+      response(code=400,headers=[],json_of([("error","No source param")]))
     elsif not controler.is_defined(source) then
-      response(code=400,headers=[],[("error","Missing source: #{source}")])
+      response(code=400,headers=[],json_of([("error","Missing source: #{source}")]))
     else
       # Create output
       s      = controler.get_source(source)
@@ -189,7 +197,7 @@ def controler.json.endpoints.output_source(~register, ~remove, name, output) =
       # Add start/stop/status endpoints
       controler.json.endpoints.stateful(register=register,name=name,output)
 
-      response(code=201,headers=[],[])  
+      response(code=201,headers=[],"")  
     end
   end
 
@@ -198,7 +206,7 @@ def controler.json.endpoints.output_source(~register, ~remove, name, output) =
 end
 
 # List of endpoints
-controler.json.endpoints.all = ref []
+controler.json.endpoints.all = ref [controler.json.endpoints.sources]
 
 # Register an endpoint
 def controler.json.endpoints.register(f) =

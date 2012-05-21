@@ -17,7 +17,7 @@ def controler.json.endpoints.metadata.get(~register, ~remove) =
 
     # Return the json content of meta
     def get_meta(~data, ~headers, ~uri, ~params, response) =
-      response(code=200,headers=[],!meta)
+      response(code=200,headers=[],json_of(!meta))
     end
 
     # Endpoint's method and uri
@@ -55,10 +55,10 @@ def controler.json.endpoints.metadata.set(~register, ~remove) =
       error  = [("error","Parse error!")]
       parsed = of_json(default=error, data)
       if parsed == error then
-        response(code=400,headers=[],error)
+        response(code=400,headers=[],json_of(error))
       else
         insert(parsed)
-        response(code=200,headers=[],[])
+        response(code=200,headers=[],"")
       end
     end
 

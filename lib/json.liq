@@ -6,7 +6,7 @@ json_headers = [("Content-Type","application/json; charset=utf-8")]
 # Default 401 handler
 def controler.json.fouroone(~data, ~headers, ~uri, ~params, response) =
   headers = [("WWW-Authenticate", "Basic realm=\"Liquidsoap Controler\"")]
-  response(code=401, headers=headers, [("error","Unauthorized!")])
+  response(code=401, headers=headers, json_of([("error","Unauthorized!")]))
 end
 
 # Same as http.enable_controler except that
@@ -20,7 +20,7 @@ def controler.enable_json(~fouroone=controler.json.fouroone,
     def handler(~headers, ~data, ~uri, ~params, response) =
       def response(~code, ~headers, data) =
         headers = list.append(headers, json_headers)
-        response(code=code, headers=headers, json_of(compact=true, data))
+        response(code=code, headers=headers, data)
       end
 
       handler(headers=headers, data=data, uri=uri, params=params, response)
